@@ -1,6 +1,17 @@
 # Spadecs
 [![Build Status](https://github.com/Conticop/Spadecs/workflows/CI/badge.svg?branch=master)](https://github.com/Conticop/Spadecs/commits/master)  
-An attempt to bring C# scripting into classic "Ace of Spades" (0.x) servers ❤️
+An attempt to bring .NET scripting into classic "Ace of Spades" (0.x) servers ❤️  
+The goal is to be able to use C# (or any .NET language) for scripting server-side.  
+
+### Why?
+Because we can... (and because I'm noobmen at Python 😆)  
+But, mainly because I want to learn some Python. Oh, and by the way I also want to make hot-reloading possible.  
+Hot-reloading means as you make changes to the server-code while it is running, you would see those changes applied immediately on the server. Wouldn't that be cool? 😎  
+I will try my best to support all server implementations, and do it cross-platform and architecture independent.  
+Current targets:  
+- PySpades (Python 2) on Windows/Linux/Mac | x86, x64
+- PySnip (Python 2) on Windows/Linux/Mac | x86, x64
+- piqueserver (Python 3) on Windows/Linux/Mac | x86, x64
 
 ## Installing
 **If you want to manually build Spadecs from source:**
