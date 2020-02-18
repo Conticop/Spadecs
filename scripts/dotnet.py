@@ -115,6 +115,12 @@ def get_library_name(name):
     return "lib{}.so".format(name)
 
 
+def LoadLibrary(name):
+    if PLATFORM == "win32":
+        return WinDLL(name)
+    return CDLL(name)
+
+
 # Retrieve .NET Core installation directory.
 def get_dotnet_dir():
     tmp = "DOTNETHOME_X{}".format("64" if X64 else "86")
@@ -204,7 +210,7 @@ def apply_script(protocol, connection, config):
     assert runtime_path is not None, ".NET Core runtime version is not sufficient, must be v2.0 or higher"
     coreclr_path = os.path.join(runtime_path, get_library_name("coreclr"))
     assert os.path.isfile(coreclr_path), "Core CLR library is missing ({})".format(coreclr_path)
-    _CLRLIB = WinDLL(coreclr_path)
+    _CLRLIB = LoadLibrary(coreclr_path)
     assert _CLRLIB is not None, "Failed to load Core CLR library"
 
     properties = {
