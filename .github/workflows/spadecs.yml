@@ -1,0 +1,33 @@
+name: Spadecs application
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        dotnet_version: [3.1.101]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+      - uses: actions/checkout@master
+
+      - name: Setup environment
+      - working-directory: ./Spadecs
+      - env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+      - name: Setup .NET Core ${{ matrix.dotnet_version }}
+        uses: actions/setup-dotnet@master
+        with:
+          dotnet-version: ${{ matrix.dotnet_version }}
+
+      - name: Build Spadecs on ${{ matrix.os }}
+        run: |
+          echo DOTNET_CLI_TELEMETRY_OPTOUT=$DOTNET_CLI_TELEMETRY_OPTOUT
+          dotnet build --configuration Release
