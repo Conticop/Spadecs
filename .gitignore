@@ -350,4 +350,7 @@ MigrationBackup/
 .ionide/
 
 # Binary output folder
-/scripts/dotnet/netstandard2.1
+/scripts/dotnet
+
+# PyCharm-generated folder
+/scripts/.idea
