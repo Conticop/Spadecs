@@ -269,6 +269,20 @@ def apply_script(protocol, connection, config):
     assert err_code == 0, "Failed to create OnLoad delegate (code={})".format(err_code)
 
     def exit_handler():
+        func_ptr = c_void_p()
+        err_code = _CLRLIB.coreclr_create_delegate(
+            _CLR_handle.value,
+            _CLR_domain.value,
+            "_boot, Version=1.0.0.0".encode("utf8"),
+            "_Internal.Bootstrapper".encode("utf8"),
+            "OnUnload".encode("utf8"),
+            byref(func_ptr)
+        )
+        if err_code == 0:
+            try:
+                CFUNCTYPE(None)(func_ptr.value)()
+            except:
+                pass
         _CLRLIB.coreclr_shutdown.restype = c_int
         _CLRLIB.coreclr_shutdown.argtypes = [
             c_void_p,
