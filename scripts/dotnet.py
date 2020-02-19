@@ -160,7 +160,7 @@ def get_dotnet_runtimes():
 
 
 # Search and select the latest installed .NET Core runtime directory.
-def get_latest_runtime(dotnet_dir=None, runtime_version_major=2, runtime_version_minor=0, runtime_version_build=0):
+def get_latest_runtime(dotnet_dir=None, runtime_version_major=3, runtime_version_minor=0, runtime_version_build=0):
     dotnet_dir = dotnet_dir or get_dotnet_dir()
     if not dotnet_dir:
         return None
@@ -207,7 +207,7 @@ def apply_script(protocol, connection, config):
     dotnet_dir = get_dotnet_dir()
     assert dotnet_dir is not None, ".NET Core is not installed"
     runtime_path = get_latest_runtime(dotnet_dir)
-    assert runtime_path is not None, ".NET Core runtime version is not sufficient, must be v2.0 or higher"
+    assert runtime_path is not None, ".NET Core runtime version is not sufficient, must be v3.0 or higher"
     coreclr_path = os.path.join(runtime_path, get_library_name("coreclr"))
     assert os.path.isfile(coreclr_path), "Core CLR library is missing ({})".format(coreclr_path)
     _CLRLIB = LoadLibrary(coreclr_path)

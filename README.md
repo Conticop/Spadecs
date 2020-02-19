@@ -19,7 +19,7 @@ Current targets:
   <summary>I can do it myself!</summary>
 
   ### Building
-  1. Install .NET Core SDK (2.1 or higher), [using latest available is highly recommended](https://dotnet.microsoft.com/download/dotnet-core).
+  1. Install .NET Core SDK (3.0 or higher), [using latest available is highly recommended](https://dotnet.microsoft.com/download/dotnet-core).
   2. [Download](https://github.com/Conticop/Spadecs/archive/master.zip) **or** Clone the repository (using `git clone https://github.com/Conticop/Spadecs`).
      * If you choose to download via zip: After downloading, extract the zip archive to preferable location, and open a command prompt (Terminal) inside the folder.
      * If you choose to clone: After cloning, open the folder (`cd Spadecs`).
