@@ -25,10 +25,7 @@
 # SOFTWARE.
 
 import atexit
-import builtins
-import functools
 import glob
-import inspect
 import json
 import os
 import re
@@ -38,41 +35,7 @@ import sys
 import dotnet_const  # TODO: investigate if this will require import-fixup on actual server code
 from ctypes import *
 from subprocess import check_output
-from types import FunctionType
 from typing import List, Optional, Tuple
-
-
-# def is_static_method(klass: type, attr: str, value=None):
-#     if value is None:
-#         value = getattr(klass, attr)
-#     assert getattr(klass, attr) == value
-#     for cls in inspect.getmro(klass):
-#         if inspect.isroutine(value):
-#             if attr in cls.__dict__:
-#                 return isinstance(cls.__dict__[attr], staticmethod)
-#     return False
-
-
-# class CPlayer(Structure):
-#     _fields_ = [
-#         ("Address", c_char_p),
-#         ("Name", c_char_p),
-#         ("Position", POINTER(Vector3)),  # TODO: struct
-#         ("Rotation", POINTER(Vector3)),  # TODO: struct
-#         ("Health", c_int32),  # TODO: possibly c_byte
-#         ("Team", c_byte),  # TODO: enum
-#         ("ID", c_byte)
-#     ]
-
-
-# class PyObject(Structure):
-#     _fields_ = []
-
-
-# class PyOnLoadParams(PyObject):
-#     _fields_ = [
-#         ("json", c_char_p)
-#     ]
 
 
 """

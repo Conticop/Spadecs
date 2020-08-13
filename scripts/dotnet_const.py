@@ -24,10 +24,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import enum
 import os
 import sys
 from collections import namedtuple
-
+from ctypes import *
 
 PLATFORM = sys.platform
 X64 = sys.maxsize > 2 ** 32
@@ -43,51 +44,66 @@ CONNECTION = None
 CONFIG = None
 
 
-# class csig(object):
-#     def __init__(self, *args):
-#         self._args = args
-#
-#     @classmethod
-#     def methods(cls, subject):
-#         def g():
-#             for name in dir(subject):
-#                 method = getattr(subject, name)
-#                 if isinstance(method, csig):
-#                     yield name, method
-#
-#         return {name: method for name, method in g()}
+def csig(*types):
+    def pybinding(f):
+        assert len(types) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount + 1
+        FUNCTIONS[f.__name__ if PYTHON_3 else f.func_name] = (f, *types)
+        return f
+
+    return pybinding
 
 
-def csig2(*types):
-    def check_accepts(f):
-        assert len(types) == f.func_code.co_argcount + 1
-        FUNCTIONS[f.func_name] = (f, *types)
+class StructureWithEnums(Structure):
+    _map = {}
 
-        def new_f(*args, **kwargs):
-            # for (a, t) in zip(args, types):
-            #     assert isinstance(a, t), "arg %r does not match %s" % (a, t)
-            return f(*args, **kwargs)
+    def __getattribute__(self, name):
+        _map = Structure.__getattribute__(self, "_map")
+        value = Structure.__getattribute__(self, name)
+        if name in _map:
+            EnumClass = _map[name]
+            if isinstance(value, Array):
+                return [EnumClass(x) for x in value]
+            return EnumClass(value)
+        return value
 
-        new_f.func_name = f.func_name
-        return new_f
+    def __str__(self):
+        result = ["struct {0} {{".format(self.__class__.__name__)]
+        for field in self._fields_:
+            attr, attrType = field
+            if attr in self._map:
+                attrType = self._map[attr]
+            value = getattr(self, attr)
+            result.append("    {0} [{1}] = {2!r};".format(attr, attrType.__name__, value))
+        result.append("};")
+        return "\n".join(result)
 
-    return check_accepts
-
-
-def csig3(*types):
-    def check_accepts(f):
-        assert len(types) == f.__code__.co_argcount + 1
-        FUNCTIONS[f.__name__] = (f, *types)
-
-        def new_f(*args, **kwargs):
-            # for (a, t) in zip(args, types):
-            #     assert isinstance(a, t), "arg %r does not match %s" % (a, t)
-            return f(*args, **kwargs)
-
-        new_f.__name__ = f.__name__
-        return new_f
-
-    return check_accepts
+    __repr__ = __str__
 
 
-csig = csig3 if PYTHON_3 else csig2
+class ETeam(enum.IntEnum):
+    BLUE = 0
+    GREEN = 1
+    SPECTATOR = 2
+
+
+class Vector3(Structure):
+    _fields_ = [
+        ("X", c_float),
+        ("Y", c_float),
+        ("Z", c_float)
+    ]
+
+
+class CPlayer(StructureWithEnums):
+    _fields_ = [
+        ("Address", c_char_p),
+        ("Name", c_char_p),
+        ("Position", POINTER(Vector3)),
+        ("Rotation", POINTER(Vector3)),
+        ("Health", c_int32),
+        ("Team", c_int32),
+        ("ID", c_byte)
+    ]
+    _map = {
+        "Team": ETeam
+    }

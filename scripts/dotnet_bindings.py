@@ -24,8 +24,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from dotnet_const import csig
 from ctypes import *
+from dotnet_const import csig
 
 
 @csig(c_int32, c_char_p)
