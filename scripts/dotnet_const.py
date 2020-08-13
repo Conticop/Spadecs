@@ -29,6 +29,7 @@ import os
 import sys
 from collections import namedtuple
 from ctypes import *
+from typing import Optional, Type
 
 PLATFORM = sys.platform
 X64 = sys.maxsize > 2 ** 32
@@ -40,14 +41,22 @@ FUNCTIONS = {}
 BINDINGS = {}
 BINDINGS_JSON = {}
 PROTOCOL = None
+PROTOCOL_OBJ = None
 CONNECTION = None
+CONNECTION_OBJ = None
 CONFIG = None
 
 
-def csig(*types):
+def csig(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
+    """
+    Decorator used to register user-defined function as a binding.
+    The first argument is a return type (None means void; no return value).
+    The rest is optional (specify argument types).
+    Use c_<type>.
+    """
     def pybinding(f):
-        assert len(types) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount + 1
-        FUNCTIONS[f.__name__ if PYTHON_3 else f.func_name] = (f, *types)
+        assert len(argtypes) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount
+        FUNCTIONS[f.__name__ if PYTHON_3 else f.func_name] = [f, restype, *argtypes]
         return f
 
     return pybinding

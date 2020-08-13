@@ -32,11 +32,11 @@ import re
 import shutil
 import signal
 import sys
-import dotnet_const  # TODO: investigate if this will require import-fixup on actual server code
 from ctypes import *
 from subprocess import check_output
 from typing import List, Optional, Tuple
 
+import dotnet_const  # TODO: investigate if this will require import-fixup on actual server code
 
 """
 Monkey-patch/Poly-fill for Python 2, implementing "shutil.which" function.
@@ -220,6 +220,7 @@ def get_latest_runtime(dotnet_dir: str = None, version_major: int = 5, version_m
 def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
                 runtime_version: Optional[Tuple[int, int, int]] = None,
                 load_name: Optional[str] = "OnLoad", unload_name: Optional[str] = "OnUnload"):
+    assert os.path.isfile(assembly_path), "Target assembly is missing ({})".format(assembly_path)
     dotnet_dir = get_dotnet_dir()
     assert dotnet_dir is not None, ".NET Core is not installed"
     runtime_path = get_latest_runtime(dotnet_dir, *runtime_version)
@@ -272,6 +273,7 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
     ]
 
     def GetManagedFunctionPointer(type_name: str, method_name: str, _assembly_name: Optional[str] = None) -> c_void_p:
+        nonlocal _CLRLIB
         assert _CLRLIB is not None, "CLR state is garbage. CLR got shutdown?"
         func_ptr = c_void_p()
         error_code = _CLRLIB.coreclr_create_delegate(
@@ -321,22 +323,28 @@ def apply_script(protocol, connection, config):
     dotnet_const.PROTOCOL = protocol
     dotnet_const.CONNECTION = connection
     dotnet_const.CONFIG = config
-    exec("import dotnet_bindings")  # This import is required (in order to load any bindings at all). (exec is used to prevent PyCharm from yelling at me.)
+    import dotnet_protocol
+    import dotnet_connection
+    # noinspection PyUnresolvedReferences
+    import dotnet_bindings  # This import is required (in order to register any bindings at all).
     for fid, ft in dotnet_const.FUNCTIONS.items():
         func = ft[0]
         ftypes = ft[1:]
         # print(func, *ftypes)
-        ff = CFUNCTYPE(*ftypes)(func)
-        dotnet_const.BINDINGS[fid] = ff
-        fptr = cast(ff, c_void_p).value
+        fref = CFUNCTYPE(*ftypes)(func)
+        dotnet_const.BINDINGS[fid] = fref
+        fptr = cast(fref, c_void_p).value
         dotnet_const.BINDINGS_JSON[fid] = fptr
     bootstrapper_path = os.path.join(dotnet_const.CURDIR, "dotnet", "net5.0", "Spadecs.Boot.dll")
-    assert os.path.isfile(bootstrapper_path), "Bootstrapper library is missing ({})".format(bootstrapper_path)
     LoadCoreCLR(bootstrapper_path, "Spadecs.Boot, Version=1.0.0.0", "Spadecs.Bootstrapper", runtime_version=(5, 0, 0))
-    return protocol, connection
+    return dotnet_protocol.DotNetProtocol, dotnet_connection.DotNetConnection
 
 
-print("[dotnet] Running Python {} ({}-bit) on {}.".format("3" if dotnet_const.PYTHON_3 else "2", "64" if dotnet_const.X64 else "32",
+print("[dotnet] Running Python {} ({}-bit) on {}.".format("3" if dotnet_const.PYTHON_3 else "2",
+                                                          "64" if dotnet_const.X64 else "32",
                                                           get_platform_name()))
 if __name__ == "__main__":
-    apply_script(None, None, None)
+    class DummyType:
+        pass
+
+    apply_script(DummyType, DummyType, DummyType)
