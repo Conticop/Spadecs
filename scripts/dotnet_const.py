@@ -29,7 +29,7 @@ import os
 import sys
 from collections import namedtuple
 from ctypes import *
-from typing import Optional, Type
+from typing import Callable, Optional, Type
 
 PLATFORM = sys.platform
 X64 = sys.maxsize > 2 ** 32
@@ -40,6 +40,11 @@ Runtime = namedtuple("Runtime", "name version path")
 FUNCTIONS = {}
 BINDINGS = {}
 BINDINGS_JSON = {}
+IMPORTED_FUNCTIONS = {}
+CLR_LIB = None
+CLR_HANDLE = None
+CLR_DOMAIN = None
+FUNCTION_IMPORTER = None  # type: Callable
 PROTOCOL = None
 PROTOCOL_OBJ = None
 CONNECTION = None
@@ -47,9 +52,9 @@ CONNECTION_OBJ = None
 CONFIG = None
 
 
-def csig(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
+def pyexport(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
     """
-    Decorator used to register user-defined function as a binding.
+    Decorator used to register user-defined function as a binding to be used/called in .NET.
     The first argument is a return type (None means void; no return value).
     The rest is optional (specify argument types).
     Use c_<type>.
@@ -60,6 +65,31 @@ def csig(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
         return f
 
     return pybinding
+
+
+def pyimport(class_name: str, method_name: str, restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
+    """
+    Decorator used to import user-defined function from .NET to be used/called in Python.
+    """
+    def netbinding(f):
+        assert len(argtypes) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount
+        fptr = FUNCTION_IMPORTER(class_name, method_name)
+        managed_method = CFUNCTYPE(restype, *argtypes)(fptr.value)
+        IMPORTED_FUNCTIONS[id(f)] = managed_method
+
+        def nethook(*args):
+            retval = managed_method(*args)
+            if restype is c_char_p:
+                return retval.decode("utf-8")
+            return retval
+
+        if PYTHON_3:
+            nethook.__name__ = f.__name__
+        else:
+            nethook.func_name = f.func_name
+        return nethook
+
+    return netbinding
 
 
 class StructureWithEnums(Structure):

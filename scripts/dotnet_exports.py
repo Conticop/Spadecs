@@ -25,14 +25,13 @@
 # SOFTWARE.
 
 """
-This file defines all Python functions (API) that is exported to .NET for consumption.
+This file defines all dynamically imported functions (API) from .NET for consumption in Python.
 """
 
 from ctypes import *
-from dotnet_const import pyexport
+from dotnet_const import pyimport
 
 
-@pyexport(c_int32, c_char_p)
-def my_pythonic_function(value: bytes) -> int:
-    print(value.decode("utf-8"))
-    return 123
+@pyimport("Spadecs.EventManager", "GetTestString", c_char_p)
+def dotnet_get_test_string() -> str:
+    pass  # The body of this function will be automagically replaced at runtime.

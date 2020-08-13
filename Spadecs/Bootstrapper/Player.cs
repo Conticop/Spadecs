@@ -24,22 +24,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Net;
+using System.Numerics;
+
 namespace Spadecs
 {
-    using static Bootstrapper;
-
-    public unsafe struct PyBindings
+    public class Player
     {
-        public static readonly delegate* cdecl<string, int> MyPythonicFunction;
+        public IPAddress Address { get; init; }
 
-        static PyBindings()
-        {
-            MyPythonicFunction = (delegate* cdecl<string, int>)PyFunctions["my_pythonic_function"];
-        }
+        public string Name { get; init; }
+
+        public Vector3 Position { get; set; }
+
+        public Vector3 Rotation { get; set; }
+
+        public int Health { get; set; }
+
+        public ETeam Team { get; set; }
+
+        public byte ID { get; init; }
     }
 
-    public static class EventManager
+    public enum ETeam : int
     {
-        public static string GetTestString() => "Hello from .NET";
+        Blue = 0,
+        Green = 1,
+        Spectator = 2
     }
 }

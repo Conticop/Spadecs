@@ -218,16 +218,17 @@ def get_latest_runtime(dotnet_dir: Optional[str] = None, version_major: Optional
 def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
                 runtime_version: Optional[Tuple[int, int, int]] = None,
                 load_name: Optional[str] = "OnLoad", unload_name: Optional[str] = "OnUnload"):
+    assert dotnet_const.CLR_LIB is None, ".NET CLR is already loaded"
     assert os.path.isfile(assembly_path), "Target assembly is missing ({})".format(assembly_path)
     dotnet_dir = get_dotnet_dir()
-    assert dotnet_dir is not None, ".NET Core is not installed"
+    assert dotnet_dir is not None, ".NET Runtime is not installed"
     runtime_path = get_latest_runtime(dotnet_dir, *runtime_version)
     assert runtime_path is not None, \
-        ".NET Core runtime version is not sufficient, must be v{}.{}.{} or higher".format(*runtime_version)
+        ".NET Runtime version is not sufficient, must be v{}.{}.{} or higher".format(*runtime_version)
     coreclr_path = join(runtime_path, get_library_name("coreclr"))
     assert os.path.isfile(coreclr_path), "Core CLR library is missing ({})".format(coreclr_path)
     _CLRLIB = LoadLibrary(coreclr_path)
-    assert _CLRLIB is not None, "Failed to load Core CLR library"
+    assert _CLRLIB is not None, "Failed to load .NET CLR library"
 
     properties = {
         "TRUSTED_PLATFORM_ASSEMBLIES": os.pathsep.join(
@@ -250,7 +251,7 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
     _CLR_domain = c_uint32()
     property_keys = [k.encode("utf-8") for k in properties.keys()]
     property_values = [v.encode("utf-8") for v in properties.values()]
-    err_code = _CLRLIB.coreclr_initialize(
+    error_code = _CLRLIB.coreclr_initialize(
         c_char_p(sys.executable.encode("utf-8")),
         c_char_p("DefaultDomain".encode("utf-8")),
         c_int32(len(properties)),
@@ -259,7 +260,8 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
         byref(_CLR_handle),
         byref(_CLR_domain)
     )
-    assert err_code == 0, "Core CLR initialization failed (code={})".format(err_code)
+    assert error_code == 0, "Core CLR initialization failed (code={})".format(error_code)
+    del error_code, properties, property_keys, property_values, PropType
 
     _CLRLIB.coreclr_create_delegate.restype = c_uint32
     _CLRLIB.coreclr_create_delegate.argtypes = [
@@ -285,13 +287,19 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
         )
         assert error_code == 0 and func_ptr.value is not None, \
             "Failed to create {}.{} delegate (code={})".format(type_name, method_name, error_code)
+        del error_code
         return func_ptr
+
+    dotnet_const.CLR_LIB = _CLRLIB
+    dotnet_const.CLR_HANDLE = _CLR_handle
+    dotnet_const.CLR_DOMAIN = _CLR_domain
+    dotnet_const.FUNCTION_IMPORTER = GetManagedFunctionPointer
 
     on_load_func_ptr = GetManagedFunctionPointer(class_name, load_name)
     on_unload = CFUNCTYPE(None)(GetManagedFunctionPointer(class_name, unload_name).value)
 
     def exit_handler(*args, **kwargs):
-        nonlocal _CLRLIB
+        nonlocal _CLRLIB, on_unload
         if _CLRLIB is None:
             return
         try:
@@ -303,10 +311,10 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
                 c_uint32
             ]
             nonlocal _CLR_handle, _CLR_domain
-            err_code = _CLRLIB.coreclr_shutdown(_CLR_handle.value, _CLR_domain.value)
-            if err_code != 0:
-                print("Core CLR shutdown (code={})".format(err_code))
-            del _CLRLIB, _CLR_handle, _CLR_domain
+            error_code = _CLRLIB.coreclr_shutdown(_CLR_handle.value, _CLR_domain.value)
+            if error_code != 0:
+                print("Core CLR shutdown (code={})".format(error_code))
+            del _CLRLIB, _CLR_handle, _CLR_domain, on_unload, error_code
 
     atexit.register(exit_handler)
     signal.signal(signal.SIGINT, exit_handler)
@@ -314,6 +322,10 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
 
     jsonData = json.dumps(dotnet_const.BINDINGS_JSON, separators=(',', ':'))
     CFUNCTYPE(None, c_char_p)(on_load_func_ptr.value)(c_char_p(jsonData.encode("utf-8")))
+    del jsonData
+
+    # noinspection PyUnresolvedReferences
+    import dotnet_exports  # This import is required (in order to call .NET methods from Python).
 
     return GetManagedFunctionPointer
 
@@ -349,3 +361,5 @@ if __name__ == "__main__":
         pass
 
     apply_script(DummyType, DummyType, DummyType)
+    import dotnet_exports
+    print("(Python to .NET) dotnet_get_test_string returned: " + dotnet_exports.dotnet_get_test_string())

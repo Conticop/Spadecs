@@ -44,7 +44,12 @@ namespace Spadecs
         {
             PyFunctions = JsonSerializer.Deserialize<Dictionary<string, ulong>>(json);
             Console.WriteLine(".NET CLR is running!");
-            Console.WriteLine(MyPythonicFunction("Hello World"));
+
+            // Call into Python function to print a given string
+            int result = MyPythonicFunction("This string has warp'ed from .NET to Python land :)");
+            Console.WriteLine(result == 123
+                              ? "All good! We are ready to rule the world."
+                              : "BUGCHECK: Integer is not matching!! Please report a bug.");
         }
 
         public static void OnUnload()
