@@ -16,4 +16,7 @@
 		<RepositoryUrl>https://github.com/Conticop/Spadecs</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/Conticop/Spadecs</PackageProjectUrl>
 	</PropertyGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Spadecs\Spadecs.csproj" />
+	</ItemGroup>
 </Project>

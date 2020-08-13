@@ -29,7 +29,24 @@ using System.Numerics;
 
 namespace Spadecs
 {
-    public class Player
+    public interface IPlayer
+    {
+        public IPAddress Address { get; init; }
+
+        public string Name { get; init; }
+
+        public Vector3 Position { get; set; }
+
+        public Vector3 Rotation { get; set; }
+
+        public int Health { get; set; }
+
+        public ETeam Team { get; set; }
+
+        public byte ID { get; init; }
+    }
+
+    public class Player : IPlayer
     {
         public IPAddress Address { get; init; }
 
