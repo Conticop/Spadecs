@@ -6,15 +6,21 @@ The goal is to be able to use C# (or any .NET language) for scripting server-sid
 ### Why?
 Because we can... (and because I'm noobmen at Python 😆)  
 But, mainly because I want to learn some Python. Oh, and by the way I also want to make hot-reloading possible.  
-Hot-reloading means as you make changes to the server-code while it is running, you would see those changes applied immediately on the server. Wouldn't that be cool? 😎  
-I will try my best to support all server implementations, and do it cross-platform and architecture independent.  
-Current targets:  
-- PySpades (Python 2) on Windows/Linux/Mac | x86, x64
-- PySnip (Python 2) on Windows/Linux/Mac | x86, x64
-- piqueserver (Python 3) on Windows/Linux/Mac | x86, x64
+I will try my best to support all (modern) server implementations, while keeping everything as smooth as possible, cross-platform and architecture independent.  
+Currently supported targets:  
+- piqueserver (Python 3) on Windows/Linux/Mac/RaspberryPi | x86, x64, ARM, ARM64
 
-**TLDR**: Only *piqueserver* is going to be supported (in future).  
-**NOTE**: I am thinking about dropping the support for Python 2 targets (*PySpades* and *PySnip*), very soon (in fact some of the code has already become red for Python 2 here), because they are really no longer maintained and also Python 2 gone End-of-Life.  
+⚠️ **WARNING**: Only Python 3-based targets will be supported from now on.
+**NOTE**: I am slowly dropping the support for Python 2 targets (*PySpades* and *PySnip*), very soon (in fact some of the code has already become red for Python 2 here), because they are really no longer maintained and also Python 2 gone End-of-Life.  
+Theoretically speaking, *Spadecs* should run fine on any Python 3-based server implementation, and also as long as you have .NET Runtime installed.  
+
+#### More about hot-reloading (csx)
+Hot-reloading means as you make changes to the server-code while it is up and running, you would see those changes applied immediately on the server. Wouldn't that be cool? 😎  
+C# hot-reloading is work-in-progress, you can read the source code by going into `CSharpScripten` folder.  
+However, we are not living in a perfect world, so everything comes with advantages and disadvantages.  
+The primary and biggest advantage of our code hot-reloading is: real-time interation with server-code.  
+The downside to this is, you won't be able to debug the `csx` code, because it is being recompiled on-the-fly (in memory).  
+In other words, if you want the ability to be able to fully debug your server-code while it is running, you must compile .NET code into a binary (library) DLL.  
 
 ## Installing
 **If you want to manually build Spadecs from source:**
@@ -44,7 +50,7 @@ Current targets:
 
 ## Running
 1. If you have build Spadecs from source, skip this step. Otherwise, [download and install .NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/current/runtime).
-2. Copy all contents of the `scripts` folder (`dotnet.py` file + `dotnet` folder) into your server scripts folder.
+2. Copy all contents of the `scripts` folder (`*.py` files + `dotnet` folder) into your server scripts folder.
 3. Modify your server configuration file to include and run `dotnet` script, it is recommended to place it first before any other scripts.
 4. Launch your server.
 5. ???
