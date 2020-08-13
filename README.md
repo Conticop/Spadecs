@@ -29,13 +29,15 @@ In other words, if you want the ability to be able to fully debug your server-co
   <summary>I can do it myself!</summary>
 
   ### Building
-  1. Install .NET Core SDK (3.0 or higher), [using latest available is highly recommended](https://dotnet.microsoft.com/download/dotnet-core).
-  2. [Download](https://github.com/Conticop/Spadecs/archive/master.zip) **or** Clone the repository (using `git clone https://github.com/Conticop/Spadecs`).
-     * If you choose to download via zip: After downloading, extract the zip archive to preferable location, and open a command prompt (Terminal) inside the folder.
-     * If you choose to clone: After cloning, open the folder (`cd Spadecs`).
+  1. Install .NET Core SDK (5.0 or higher), [using latest available is highly recommended](https://dotnet.microsoft.com/download/dotnet/5.0).
+  2. [Download](https://github.com/Conticop/Spadecs/archive/master.zip) **or** Clone the repository (using `git clone https://github.com/Conticop/Spadecs`, or use your favorite GUI).
+     * If you choose to download via zip: After downloading, extract the zip archive to preferable location, and open a command prompt (Terminal) *inside* an extracted folder.
+     * If you choose to clone: After cloning, open the repo folder (`cd Spadecs`).
   3. Run `dotnet build Spadecs`.
 
+  Note: In order to build *Spadecs* successfully, you must have at least .NET 5.0 SDK.  
   If there are no errors, the output binaries shall be located in a new [`dotnet` folder under scripts](/scripts).  
+  If you have encountered a build error and can't figure it out, please don't hesitate to [report an issue](https://github.com/Conticop/Spadecs/issues/new).  
   If you made it this far, you are ready to proceed to [Running section](#running).
 </details>
 
@@ -50,7 +52,7 @@ In other words, if you want the ability to be able to fully debug your server-co
 </details>
 
 ## Running
-1. If you have build Spadecs from source, skip this step. Otherwise, [download and install .NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/current/runtime).
+1. If you have build Spadecs from source, skip this step. Otherwise, [download and install .NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/5.0/runtime).
 2. Copy all contents of the `scripts` folder (`*.py` files + `dotnet` folder) into your server scripts folder.
 3. Modify your server configuration file to include and run `dotnet` script, it is recommended to place it first before any other scripts.
 4. Launch your server.
