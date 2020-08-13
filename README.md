@@ -16,10 +16,10 @@ I will try my best to support all (modern) server implementations, while keeping
 Theoretically speaking, *Spadecs* should run fine on any Python 3-based server implementation, and also as long as you have .NET Runtime installed.  
 
 #### More about hot-reloading (csx)
-Hot-reloading means as you make changes to the server-code while it is up and running, you would see those changes applied immediately on the server. Wouldn't that be cool? 😎  
+Hot-reloading means as you make changes to the server-code while it is up and running, you would see those changes applied immediately on the server (no more server restarting). Wouldn't that be cool? 😎  
 C# hot-reloading is work-in-progress, you can read the source code by going into `CSharpScripten` folder.  
 However, we are not living in a perfect world, so everything comes with advantages and disadvantages.  
-The primary and biggest advantage of our code hot-reloading is: real-time interation with server-code.  
+The primary and biggest advantage of our code hot-reloading is: real-time interaction with server-code.  
 The downside to this is, you won't be able to debug the `csx` code, because it is being recompiled on-the-fly (in memory).  
 In other words, if you want the ability to be able to fully debug your server-code while it is running, you must compile .NET code into a binary (library) DLL.  
 
