@@ -59,6 +59,7 @@ def pyexport(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']
     The rest is optional (specify argument types).
     Use c_<type>.
     """
+
     def pybinding(f):
         assert len(argtypes) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount
         FUNCTIONS[f.__name__ if PYTHON_3 else f.func_name] = [f, restype, *argtypes]
@@ -71,18 +72,21 @@ def pyimport(class_name: str, method_name: str, restype: Optional[Type['_CData']
     """
     Decorator used to import user-defined function from .NET to be used/called in Python.
     """
+
     def netbinding(f):
         assert len(argtypes) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount
         fptr = FUNCTION_IMPORTER(class_name, method_name)
         managed_method = CFUNCTYPE(restype, *argtypes)(fptr.value)
-        IMPORTED_FUNCTIONS[id(f)] = managed_method
+        IMPORTED_FUNCTIONS[id(f)] = (managed_method, class_name, method_name, *argtypes)
 
-        def nethook(*args):
-            retval = managed_method(*args)
-            if restype is c_char_p:
-                return retval.decode("utf-8")
-            return retval
+        def netmethod_string(*args):
+            # Special handling for `string` return type (automatically decode to UTF8).
+            return managed_method(*args).decode("utf-8")
 
+        def netmethod(*args):
+            return managed_method(*args)
+
+        nethook = netmethod_string if restype is c_char_p else netmethod
         if PYTHON_3:
             nethook.__name__ = f.__name__
         else:

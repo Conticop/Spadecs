@@ -362,4 +362,5 @@ if __name__ == "__main__":
 
     apply_script(DummyType, DummyType, DummyType)
     import dotnet_exports
-    print("(Python to .NET) dotnet_get_test_string returned: " + dotnet_exports.dotnet_get_test_string())
+    print("(Python to .NET) {} returned: {}".format(dotnet_exports.dotnet_get_test_string.__name__,
+                                                    dotnet_exports.dotnet_get_test_string()))
