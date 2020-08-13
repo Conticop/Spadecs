@@ -7,12 +7,16 @@ on:
     branches:
       - master
 
+  pull_request:
+    branches:
+      - master
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        dotnet_version: [3.1.102]
+        dotnet_version: ['5.0.100-preview.7.20366.6']
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
