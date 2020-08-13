@@ -30,6 +30,6 @@ from dotnet_const import CONNECTION, CONFIG
 
 class DotNetConnection(CONNECTION):
     def __init__(self, *args, **kwargs):
-        self.__init__(self, *args, **kwargs)
+        CONNECTION.__init__(self, *args, **kwargs)
         dotnet_const.CONNECTION_OBJ = self
         print("[dotnet] Connection initialized")

@@ -30,6 +30,6 @@ from dotnet_const import PROTOCOL, CONFIG
 
 class DotNetProtocol(PROTOCOL):
     def __init__(self, *args, **kwargs):
-        self.__init__(self, *args, **kwargs)
+        PROTOCOL.__init__(self, *args, **kwargs)
         dotnet_const.PROTOCOL_OBJ = self
         print("[dotnet] Protocol initialized")
