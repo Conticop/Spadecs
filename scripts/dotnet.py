@@ -33,10 +33,12 @@ import shutil
 import signal
 import sys
 from ctypes import *
+from os.path import abspath, dirname, isdir, join
 from subprocess import check_output
 from typing import List, Optional, Tuple
 
-import dotnet_const  # TODO: investigate if this will require import-fixup on actual server code
+sys.path.insert(1, abspath(dirname(__file__)))  # Fix dotnet_* imports.
+import dotnet_const
 
 """
 Monkey-patch/Poly-fill for Python 2, implementing "shutil.which" function.
@@ -46,7 +48,7 @@ if not hasattr(shutil, "which"):
     # Additionally check that `file` is not a directory, as on Windows
     # directories pass the os.access check.
     def _access_check(fn, mode):
-        return os.path.exists(fn) and os.access(fn, mode) and not os.path.isdir(fn)
+        return os.path.exists(fn) and os.access(fn, mode) and not isdir(fn)
 
 
     def shutil_which(cmd, mode=os.F_OK | os.X_OK, path=None):
@@ -83,7 +85,7 @@ if not hasattr(shutil, "which"):
             if normdir not in seen:
                 seen.add(normdir)
                 for f in files:
-                    name = os.path.join(dt, f)
+                    name = join(dt, f)
                     if _access_check(name, mode):
                         return name
         return None
@@ -127,25 +129,25 @@ def get_dotnet_dir() -> Optional[str]:
     tmp = "DOTNETHOME_X{}".format("64" if dotnet_const.X64 else "86")
     if tmp in dotnet_const.ENVIRON:
         tmp = dotnet_const.ENVIRON[tmp]
-        if os.path.isdir(tmp):
+        if isdir(tmp):
             return tmp
     if "DOTNETHOME" in dotnet_const.ENVIRON:
         tmp = dotnet_const.ENVIRON["DOTNETHOME"]
-        if os.path.isdir(tmp):
+        if isdir(tmp):
             return tmp
     if "DOTNET_ROOT" in dotnet_const.ENVIRON:
         tmp = dotnet_const.ENVIRON["DOTNET_ROOT"]
-        if os.path.isdir(tmp):
+        if isdir(tmp):
             return tmp
     tmp = shutil.which(get_exe_name("dotnet"))
     if tmp:
         try:
             tmp2 = os.readlink(tmp) if dotnet_const.PYTHON_3 else tmp
-            tmp = tmp2 if os.path.isabs(tmp2) else os.path.abspath(os.path.join(os.path.dirname(tmp), tmp2))
+            tmp = tmp2 if os.path.isabs(tmp2) else abspath(join(dirname(tmp), tmp2))
         except OSError:
             pass
-        tmp = os.path.dirname(tmp)
-        if os.path.isdir(tmp):
+        tmp = dirname(tmp)
+        if isdir(tmp):
             return tmp
     return None
 
@@ -157,26 +159,22 @@ def get_dotnet_runtimes() -> List[dotnet_const.Runtime]:
     runtimes = []
     for line in check_output([get_exe_name("dotnet"), "--list-runtimes"]).decode("utf-8").splitlines():
         name, version, path = line.split(" ", 2)
-        path = os.path.join(path[1:-1], version)
+        path = join(path[1:-1], version)
         runtimes.append(dotnet_const.Runtime(name=name, version=version, path=path))
     return runtimes
 
 
-def get_latest_runtime(dotnet_dir: str = None, version_major: int = 5, version_minor: int = 0, version_build: int = 0) \
-        -> Optional[str]:
+def get_latest_runtime(dotnet_dir: Optional[str] = None, version_major: Optional[int] = 5,
+                       version_minor: Optional[int] = 0, version_build: Optional[int] = 0) -> Optional[str]:
     """
     Search and select the latest installed .NET Core runtime directory.
-    :type dotnet_dir: str
-    :type version_major: int
-    :type version_minor: int
-    :type version_build: int
     """
     dotnet_dir = dotnet_dir or get_dotnet_dir()
     if not dotnet_dir:
         return None
     if "DOTNETRUNTIMEVERSION" in dotnet_const.ENVIRON:
-        tmp = os.path.join(dotnet_dir, "shared", "Microsoft.NETCore.App", dotnet_const.ENVIRON["DOTNETRUNTIMEVERSION"])
-        if os.path.isdir(tmp):
+        tmp = join(dotnet_dir, "shared", "Microsoft.NETCore.App", dotnet_const.ENVIRON["DOTNETRUNTIMEVERSION"])
+        if isdir(tmp):
             return tmp
     runtime = None
     for r in get_dotnet_runtimes():
@@ -208,11 +206,11 @@ def get_latest_runtime(dotnet_dir: str = None, version_major: int = 5, version_m
                             continue
     if runtime is None:
         return None
-    tmp = os.path.join(dotnet_dir, "shared", "Microsoft.NETCore.App", runtime.version)
-    if os.path.isdir(tmp):
+    tmp = join(dotnet_dir, "shared", "Microsoft.NETCore.App", runtime.version)
+    if isdir(tmp):
         return tmp
-    tmp = os.path.join(runtime.path, runtime.version)
-    if os.path.isdir(tmp):
+    tmp = join(runtime.path, runtime.version)
+    if isdir(tmp):
         return tmp
     return None
 
@@ -224,16 +222,17 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
     dotnet_dir = get_dotnet_dir()
     assert dotnet_dir is not None, ".NET Core is not installed"
     runtime_path = get_latest_runtime(dotnet_dir, *runtime_version)
-    assert runtime_path is not None, ".NET Core runtime version is not sufficient, must be v{}.{}.{} or higher".format(*runtime_version)
-    coreclr_path = os.path.join(runtime_path, get_library_name("coreclr"))
+    assert runtime_path is not None, \
+        ".NET Core runtime version is not sufficient, must be v{}.{}.{} or higher".format(*runtime_version)
+    coreclr_path = join(runtime_path, get_library_name("coreclr"))
     assert os.path.isfile(coreclr_path), "Core CLR library is missing ({})".format(coreclr_path)
     _CLRLIB = LoadLibrary(coreclr_path)
     assert _CLRLIB is not None, "Failed to load Core CLR library"
 
     properties = {
         "TRUSTED_PLATFORM_ASSEMBLIES": os.pathsep.join(
-            glob.glob(os.path.join(runtime_path, "*.dll")) +
-            glob.glob(os.path.join(os.path.dirname(assembly_path), "*.dll"))
+            glob.glob(join(runtime_path, "*.dll")) +
+            glob.glob(join(dirname(assembly_path), "*.dll"))
         )
     }
     PropType = c_char_p * len(properties)
@@ -335,7 +334,7 @@ def apply_script(protocol, connection, config):
         dotnet_const.BINDINGS[fid] = fref
         fptr = cast(fref, c_void_p).value
         dotnet_const.BINDINGS_JSON[fid] = fptr
-    bootstrapper_path = os.path.join(dotnet_const.CURDIR, "dotnet", "net5.0", "Spadecs.Boot.dll")
+    bootstrapper_path = join(dotnet_const.CURDIR, "dotnet", "net5.0", "Spadecs.Boot.dll")
     LoadCoreCLR(bootstrapper_path, "Spadecs.Boot, Version=1.0.0.0", "Spadecs.Bootstrapper", runtime_version=(5, 0, 0))
     return dotnet_protocol.DotNetProtocol, dotnet_connection.DotNetConnection
 
@@ -343,6 +342,8 @@ def apply_script(protocol, connection, config):
 print("[dotnet] Running Python {} ({}-bit) on {}.".format("3" if dotnet_const.PYTHON_3 else "2",
                                                           "64" if dotnet_const.X64 else "32",
                                                           get_platform_name()))
+if not dotnet_const.PYTHON_3:
+    print("[dotnet] WARNING: Python 2 is no longer supported!")
 if __name__ == "__main__":
     class DummyType:
         pass
