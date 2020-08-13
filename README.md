@@ -7,10 +7,11 @@ The goal is to be able to use C# (or any .NET language) for scripting server-sid
 Because we can... (and because I'm noobmen at Python 😆)  
 But, mainly because I want to learn some Python. Oh, and by the way I also want to make hot-reloading possible.  
 I will try my best to support all (modern) server implementations, while keeping everything as smooth as possible, cross-platform and architecture independent.  
-Currently supported targets:  
+
+#### Currently supported targets
 - piqueserver (Python 3) on Windows/Linux/Mac/RaspberryPi | x86, x64, ARM, ARM64
 
-⚠️ **WARNING**: Only Python 3-based targets will be supported from now on.
+⚠️ **WARNING**: Only Python 3-based targets will be supported from now on.  
 **NOTE**: I am slowly dropping the support for Python 2 targets (*PySpades* and *PySnip*), very soon (in fact some of the code has already become red for Python 2 here), because they are really no longer maintained and also Python 2 gone End-of-Life.  
 Theoretically speaking, *Spadecs* should run fine on any Python 3-based server implementation, and also as long as you have .NET Runtime installed.  
 
