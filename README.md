@@ -13,6 +13,9 @@ Current targets:
 - PySnip (Python 2) on Windows/Linux/Mac | x86, x64
 - piqueserver (Python 3) on Windows/Linux/Mac | x86, x64
 
+**TLDR**: Only *piqueserver* is going to be supported (in future).  
+**NOTE**: I am thinking about dropping the support for Python 2 targets (*PySpades* and *PySnip*), very soon (in fact some of the code has already become red for Python 2 here), because they are really no longer maintained and also Python 2 gone End-of-Life.  
+
 ## Installing
 **If you want to manually build Spadecs from source:**
 <details>
