@@ -86,12 +86,11 @@ def pyimport(class_name: str, method_name: str, restype: Optional[Type['_CData']
         def netmethod(*args):
             return managed_method(*args)
 
-        nethook = netmethod_string if restype is c_char_p else netmethod
         if PYTHON_3:
-            nethook.__name__ = f.__name__
+            netmethod_string.__name__ = netmethod.__name__ = f.__name__
         else:
-            nethook.func_name = f.func_name
-        return nethook
+            netmethod_string.func_name = netmethod.func_name = f.func_name
+        return netmethod_string if restype is c_char_p else netmethod
 
     return netbinding
 
