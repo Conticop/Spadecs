@@ -24,32 +24,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-using System.Text.Json;
-
 namespace Spadecs
 {
-    using static PyBindings;
+    using static Bootstrapper;
 
-    public static unsafe class Bootstrapper
+    public unsafe struct PyBindings
     {
-        internal static Dictionary<string, ulong> PyFunctions;
+        public static readonly delegate* cdecl<string, int> MyPythonicFunction;
 
-        static Bootstrapper()
+        static PyBindings()
         {
-        }
-
-        public static void OnLoad(string json)
-        {
-            PyFunctions = JsonSerializer.Deserialize<Dictionary<string, ulong>>(json);
-            Console.WriteLine(".NET CLR is running!");
-            Console.WriteLine(MyPythonicFunction("Hello World"));
-        }
-
-        public static void OnUnload()
-        {
-            Console.WriteLine(".NET CLR is unloading!");
+            MyPythonicFunction = (delegate* cdecl<string, int>)PyFunctions["my_pythonic_function"];
         }
     }
 }
