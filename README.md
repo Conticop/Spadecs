@@ -52,7 +52,7 @@ In other words, if you want the ability to be able to fully debug your server-co
 </details>
 
 ## Running
-1. If you have build Spadecs from source, skip this step. Otherwise, [download and install .NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/current/runtime).
+1. If you have build Spadecs from source, skip this step. Otherwise, [download and install .NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/5.0/runtime).
 2. Copy all contents of the `scripts` folder (`*.py` files + `dotnet` folder) into your server scripts folder.
 3. Modify your server configuration file to include and run `dotnet` script, it is recommended to place it first before any other scripts.
 4. Launch your server.
