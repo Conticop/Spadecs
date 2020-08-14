@@ -60,10 +60,24 @@ def pyexport(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']
     Use c_<type>.
     """
 
+    def _unpack_args(*args) -> list:
+        return [v.decode("utf-8") if argtypes[i] is c_char_p and isinstance(v, bytes) else v for i, v in enumerate(args)]
+
     def pybinding(f):
         assert len(argtypes) == f.__code__.co_argcount
-        FUNCTIONS[f.__name__] = [f, restype, *argtypes]
-        return f
+
+        def pymethod(*args):
+            assert len(args) == len(argtypes), "Invalid number of arguments"
+            return f(*_unpack_args(*args))
+
+        def pymethod_string(*args) -> str:
+            # Special handling for `string` return type (automatically decode to UTF8).
+            return pymethod(*args).decode("utf-8")
+
+        pymethod_string.__name__ = pymethod.__name__ = f.__name__
+        func = pymethod_string if restype is c_char_p else pymethod
+        FUNCTIONS[f.__name__] = (func, restype, *argtypes)
+        return func
 
     return pybinding
 
