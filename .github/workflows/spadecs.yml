@@ -28,10 +28,12 @@ jobs:
           dotnet-version: ${{ matrix.dotnet_version }}
 
       - name: Install dependencies
+        if: success()
         working-directory: ./Spadecs
         run: dotnet restore
 
       - name: Build solution
+        if: success()
         working-directory: ./Spadecs
         run: dotnet build --configuration Release --no-restore
 
@@ -39,5 +41,5 @@ jobs:
         if: success() && github.event_name == 'push'
         uses: actions/upload-artifact@master
         with:
-          name: Spadecs
+          name: Spadecs-${{ matrix.os }}
           path: ${{ github.workspace }}/scripts/
