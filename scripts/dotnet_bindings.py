@@ -34,5 +34,5 @@ from dotnet_const import pyexport
 
 @pyexport(c_int32, c_char_p)
 def my_pythonic_function(value: str) -> int:
-    print(value)
+    print("(.NET to Python)", value)
     return 123

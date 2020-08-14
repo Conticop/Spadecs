@@ -349,8 +349,13 @@ def apply_script(protocol, connection, config):
         dotnet_const.BINDINGS_JSON[fid] = fptr
     bootstrapper_path = join(dotnet_const.CURDIR, "dotnet", "net5.0", "Spadecs.Boot.dll")
     LoadCoreCLR(bootstrapper_path, "Spadecs.Boot, Version=1.0.0.0", "Spadecs.Bootstrapper", runtime_version=(5, 0, 0))
+    # noinspection PyTypeChecker
     importlib.reload(dotnet_protocol)
+    # noinspection PyTypeChecker
     importlib.reload(dotnet_connection)
+    import dotnet_exports
+    print("(Python to .NET) {} returned: {}".format(dotnet_exports.dotnet_get_test_string.__name__,
+                                                    dotnet_exports.dotnet_get_test_string()))
     return dotnet_protocol.DotNetProtocol, dotnet_connection.DotNetConnection
 
 
@@ -364,6 +369,3 @@ if __name__ == "__main__":
         pass
 
     apply_script(DummyType, DummyType, DummyType)
-    import dotnet_exports
-    print("(Python to .NET) {} returned: {}".format(dotnet_exports.dotnet_get_test_string.__name__,
-                                                    dotnet_exports.dotnet_get_test_string()))

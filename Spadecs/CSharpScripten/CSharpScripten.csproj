@@ -26,6 +26,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="3.7.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="3.7.0" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="System.IO.FileSystem.Watcher.Polling" Version="0.1.2-e200127-1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Spadecs\Spadecs.csproj" />
