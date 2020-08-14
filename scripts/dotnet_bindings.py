@@ -25,7 +25,7 @@
 # SOFTWARE.
 
 """
-This file defines all Python functions (API) that is exported to .NET for consumption.
+This file defines all Python functions (API) which are exported to .NET for consumption.
 """
 
 from ctypes import *

@@ -24,6 +24,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using System.ComponentModel;
+using System.Net;
+
 namespace Spadecs
 {
     using static Bootstrapper;
@@ -36,10 +40,5 @@ namespace Spadecs
         {
             MyPythonicFunction = (delegate* cdecl<string, int>)PyFunctions["my_pythonic_function"];
         }
-    }
-
-    public static class EventManager
-    {
-        public static string GetTestString() => "Hello from .NET";
     }
 }

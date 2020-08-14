@@ -24,6 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using System.ComponentModel;
 using System.Net;
 using System.Numerics;
 
@@ -68,5 +70,73 @@ namespace Spadecs
         Blue = 0,
         Green = 1,
         Spectator = 2
+    }
+
+    public enum PyBool : byte
+    {
+        False = 0,
+        True = 1,
+        Pass = 2
+    }
+
+    public class PreConnectEventArgs : EventArgs
+    {
+        public PreConnectEventArgs()
+        {
+            AllowConnection = PyBool.Pass;
+        }
+
+        public PreConnectEventArgs(in string address) : this()
+        {
+            Address = IPAddress.Parse(address);
+        }
+
+        public IPAddress Address { get; init; }
+
+        [DefaultValue(PyBool.Pass)]
+        public PyBool AllowConnection { get; set; }
+    }
+
+    public sealed class PostPlayerConnectEventArgs : PreConnectEventArgs
+    {
+        public PostPlayerConnectEventArgs(in string address, in byte id) : base(in address)
+        {
+            ID = id;
+        }
+
+        public byte ID { get; init; }
+    }
+
+    public static class EventManager
+    {
+        private static string GetTestString() => "Hello from private .NET method";
+
+        public static event EventHandler<PreConnectEventArgs> PrePlayerConnect;
+
+        private static PyBool OnPrePlayerConnect(string address)
+        {
+            var handler = PrePlayerConnect;
+            if (handler is null)
+            {
+                return PyBool.Pass;
+            }
+            var e = new PreConnectEventArgs(in address);
+            handler(null, e);
+            return e.AllowConnection;
+        }
+
+        public static event EventHandler<PostPlayerConnectEventArgs> PostPlayerConnect;
+
+        private static PyBool OnPostPlayerConnect(string address, byte id)
+        {
+            var handler = PostPlayerConnect;
+            if (handler is null)
+            {
+                return PyBool.Pass;
+            }
+            var e = new PostPlayerConnectEventArgs(in address, in id);
+            handler(null, e);
+            return e.AllowConnection;
+        }
     }
 }

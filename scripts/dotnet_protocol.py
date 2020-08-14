@@ -27,9 +27,12 @@
 import dotnet_const
 from dotnet_const import PROTOCOL, CONFIG
 
+if dotnet_const.CLR_LIB:
+    import dotnet_exports
+
 
 class DotNetProtocol(PROTOCOL):
     def __init__(self, *args, **kwargs):
         PROTOCOL.__init__(self, *args, **kwargs)
         dotnet_const.PROTOCOL_OBJ = self
-        print("[dotnet] Protocol initialized")
+        # print("[dotnet] Protocol initialized")

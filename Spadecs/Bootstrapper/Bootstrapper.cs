@@ -50,6 +50,18 @@ namespace Spadecs
             Console.WriteLine(result == 123
                               ? "All good! We are ready to rule the world."
                               : "BUGCHECK: Integer is not matching!! Please report a bug.");
+
+            // Setup some events (testing purposes)
+            void PrePlayerConnect(object sender, PreConnectEventArgs e)
+            {
+                Console.WriteLine("[dotnet] {0}({1})", nameof(PrePlayerConnect), e.Address);
+            }
+            void PostPlayerConnect(object sender, PostPlayerConnectEventArgs e)
+            {
+                Console.WriteLine("[dotnet] {0}({1}, #{2})", nameof(PostPlayerConnect), e.Address, e.ID);
+            }
+            EventManager.PrePlayerConnect += PrePlayerConnect;
+            EventManager.PostPlayerConnect += PostPlayerConnect;
         }
 
         public static void OnUnload()

@@ -31,7 +31,19 @@ This file defines all dynamically imported functions (API) from .NET for consump
 from ctypes import *
 from dotnet_const import pyimport
 
+_ASSEMBLY, _CLASS = "Spadecs, Version=1.0.0.0", "Spadecs.EventManager"
 
-@pyimport("Spadecs.EventManager", "GetTestString", c_char_p)
+
+@pyimport(_ASSEMBLY, _CLASS, "GetTestString", c_char_p)
 def dotnet_get_test_string() -> str:
+    pass  # The body of this function will be automagically replaced at runtime.
+
+
+@pyimport(_ASSEMBLY, _CLASS, "OnPrePlayerConnect", c_ubyte, c_char_p)
+def dotnet_event_pre_player_connect(ip_address: str) -> int:
+    pass  # The body of this function will be automagically replaced at runtime.
+
+
+@pyimport(_ASSEMBLY, _CLASS, "OnPostPlayerConnect", c_ubyte, c_char_p, c_ubyte)
+def dotnet_event_post_player_connect(ip_address: str, pid: int) -> int:
     pass  # The body of this function will be automagically replaced at runtime.

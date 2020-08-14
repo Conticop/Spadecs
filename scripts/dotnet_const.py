@@ -61,32 +61,36 @@ def pyexport(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']
     """
 
     def pybinding(f):
-        assert len(argtypes) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount
-        FUNCTIONS[f.__name__ if PYTHON_3 else f.func_name] = [f, restype, *argtypes]
+        assert len(argtypes) == f.__code__.co_argcount
+        FUNCTIONS[f.__name__] = [f, restype, *argtypes]
         return f
 
     return pybinding
 
 
-def pyimport(class_name: str, method_name: str, restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
+def pyimport(assembly_name: str, class_name: str, method_name: str, restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
     """
     Decorator used to import user-defined function from .NET to be used/called in Python.
     """
 
     def netbinding(f):
-        assert len(argtypes) == (f.__code__ if PYTHON_3 else f.func_code).co_argcount
-        fptr = FUNCTION_IMPORTER(class_name, method_name)
+        assert len(argtypes) == f.__code__.co_argcount
+        fptr = FUNCTION_IMPORTER(class_name, method_name, assembly_name)
         managed_method = CFUNCTYPE(restype, *argtypes)(fptr.value)
         IMPORTED_FUNCTIONS[id(f)] = (managed_method, class_name, method_name, *argtypes)
 
-        def netmethod_string(*args):
-            # Special handling for `string` return type (automatically decode to UTF8).
-            return managed_method(*args).decode("utf-8")
+        def pack_args(*args):
+            return [v.encode("utf-8") if isinstance(v, str) else v for v in args]
 
         def netmethod(*args):
-            return managed_method(*args)
+            assert len(args) == len(argtypes), "Invalid number of arguments"
+            return managed_method(*pack_args(*args))
 
-        netmethod_string.__name__ = netmethod.__name__ = f.__name__ if PYTHON_3 else f.func_name
+        def netmethod_string(*args):
+            # Special handling for `string` return type (automatically decode to UTF8).
+            return netmethod(*args).decode("utf-8")
+
+        netmethod_string.__name__ = netmethod.__name__ = f.__name__
         return netmethod_string if restype is c_char_p else netmethod
 
     return netbinding

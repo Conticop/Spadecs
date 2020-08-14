@@ -26,6 +26,7 @@
 
 import atexit
 import glob
+import importlib
 import json
 import os
 import re
@@ -274,13 +275,13 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
     ]
 
     def GetManagedFunctionPointer(type_name: str, method_name: str, _assembly_name: Optional[str] = None) -> c_void_p:
-        nonlocal _CLRLIB
+        nonlocal _CLRLIB, assembly_name
         assert _CLRLIB is not None, "CLR state is garbage. CLR got shutdown?"
         func_ptr = c_void_p()
         error_code = _CLRLIB.coreclr_create_delegate(
             _CLR_handle.value,
             _CLR_domain.value,
-            (_assembly_name or assembly_name).encode("utf-8"),
+            (_assembly_name if _assembly_name is not None else assembly_name).encode("utf-8"),
             type_name.encode("utf-8"),
             method_name.encode("utf-8"),
             byref(func_ptr)
@@ -313,7 +314,7 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
             nonlocal _CLR_handle, _CLR_domain
             error_code = _CLRLIB.coreclr_shutdown(_CLR_handle.value, _CLR_domain.value)
             if error_code != 0:
-                print("Core CLR shutdown (code={})".format(error_code))
+                print(".NET CLR shutdown (code={})".format(error_code))
             del _CLRLIB, _CLR_handle, _CLR_domain, on_unload, error_code
 
     atexit.register(exit_handler)
@@ -348,6 +349,8 @@ def apply_script(protocol, connection, config):
         dotnet_const.BINDINGS_JSON[fid] = fptr
     bootstrapper_path = join(dotnet_const.CURDIR, "dotnet", "net5.0", "Spadecs.Boot.dll")
     LoadCoreCLR(bootstrapper_path, "Spadecs.Boot, Version=1.0.0.0", "Spadecs.Bootstrapper", runtime_version=(5, 0, 0))
+    importlib.reload(dotnet_protocol)
+    importlib.reload(dotnet_connection)
     return dotnet_protocol.DotNetProtocol, dotnet_connection.DotNetConnection
 
 

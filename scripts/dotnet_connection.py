@@ -27,9 +27,28 @@
 import dotnet_const
 from dotnet_const import CONNECTION, CONFIG
 
+if dotnet_const.CLR_LIB:
+    import dotnet_exports
+
 
 class DotNetConnection(CONNECTION):
     def __init__(self, *args, **kwargs):
         CONNECTION.__init__(self, *args, **kwargs)
         dotnet_const.CONNECTION_OBJ = self
-        print("[dotnet] Connection initialized")
+        # self.OnConnectCallback = (FalseLogic, TrueLogic, PassLogic)
+        # print("[dotnet] Connection initialized")
+
+    def on_connect(self, *args, **kwargs):
+        ipAddress = self.address[0].encode("utf-8")
+        # print("pre_player_connect", type(ipAddress), ipAddress)
+        result = dotnet_exports.dotnet_event_pre_player_connect(ipAddress)
+        # self.OnConnectCallback[result]()
+        if result == 0:
+            return False
+        if result == 1:
+            return True
+        result = CONNECTION.on_connect(self, *args, **kwargs)
+        pid = self.player_id
+        # print("post_player_connect", type(pid), pid)
+        post_result = dotnet_exports.dotnet_event_post_player_connect(ipAddress, pid)
+        return (False, True, result)[post_result]
