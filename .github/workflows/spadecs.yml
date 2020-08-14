@@ -1,34 +1,43 @@
-name: CI
+name: .NET
 env:
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
 
 on:
   push:
-    branches:
-      - master
-
+    branches: [ master ]
   pull_request:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        dotnet_version: ['5.0.100-preview.7.20366.6']
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        dotnet_version: [ '5.0.100-preview.7.20366.6' ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
+    name: Build Spadecs on ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@master
 
-      - name: Setup .NET Core ${{ matrix.dotnet_version }}
+      - name: Setup .NET ${{ matrix.dotnet_version }}
         uses: actions/setup-dotnet@master
         with:
           dotnet-version: ${{ matrix.dotnet_version }}
 
-      - name: Build Spadecs on ${{ matrix.os }}
+      - name: Install dependencies
         working-directory: ./Spadecs
-        run: |
-          dotnet build --configuration Release
+        run: dotnet restore
+
+      - name: Build solution
+        working-directory: ./Spadecs
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Upload a build artifact
+        if: success() && github.event_name == 'push'
+        uses: actions/upload-artifact@master
+        with:
+          name: Spadecs
+          path: ${{ github.workspace }}/scripts/
