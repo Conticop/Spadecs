@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Setup .NET ${{ matrix.dotnet_version }}
+        if: success()
         uses: actions/setup-dotnet@master
         with:
           dotnet-version: ${{ matrix.dotnet_version }}
@@ -30,7 +31,9 @@ jobs:
       - name: Install dependencies
         if: success()
         working-directory: ./Spadecs
-        run: dotnet restore
+        run: |
+          dotnet add CSharpScripten package System.IO.FileSystem.Watcher.Polling --version 0.1.2-e200127-1 --source https://dotnet.myget.org/F/dotnet-corefxlab/api/v3/index.json
+          dotnet restore
 
       - name: Build solution
         if: success()
@@ -41,5 +44,5 @@ jobs:
         if: success() && github.event_name == 'push'
         uses: actions/upload-artifact@master
         with:
-          name: Spadecs-${{ matrix.os }}
+          name: Spadecs-${{ runner.os }}-${{ github.sha }}
           path: ${{ github.workspace }}/scripts/
