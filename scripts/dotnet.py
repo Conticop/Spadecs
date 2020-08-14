@@ -281,7 +281,7 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
         error_code = _CLRLIB.coreclr_create_delegate(
             _CLR_handle.value,
             _CLR_domain.value,
-            (_assembly_name if _assembly_name is not None else assembly_name).encode("utf-8"),
+            (_assembly_name or assembly_name).encode("utf-8"),
             type_name.encode("utf-8"),
             method_name.encode("utf-8"),
             byref(func_ptr)

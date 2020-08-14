@@ -24,17 +24,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+
 namespace Spadecs
 {
-    using static Bootstrapper;
-
-    public unsafe struct PyBindings
+    public static class EventManager
     {
-        public static readonly delegate* cdecl<string, int> MyPythonicFunction;
+        private static string GetTestString() => "Hello from private .NET method";
 
-        static PyBindings()
+        public static event EventHandler<PreConnectEventArgs> PrePlayerConnect;
+
+        private static PyBool OnPrePlayerConnect(string address)
         {
-            MyPythonicFunction = (delegate* cdecl<string, int>)PyFunctions["my_pythonic_function"];
+            var handler = PrePlayerConnect;
+            if (handler is null)
+            {
+                return PyBool.Pass;
+            }
+            var e = new PreConnectEventArgs(in address);
+            handler(null, e);
+            return e.AllowConnection;
+        }
+
+        public static event EventHandler<PostPlayerConnectEventArgs> PostPlayerConnect;
+
+        private static PyBool OnPostPlayerConnect(string address, byte id)
+        {
+            var handler = PostPlayerConnect;
+            if (handler is null)
+            {
+                return PyBool.Pass;
+            }
+            var e = new PostPlayerConnectEventArgs(in address, in id);
+            handler(null, e);
+            return e.AllowConnection;
         }
     }
 }

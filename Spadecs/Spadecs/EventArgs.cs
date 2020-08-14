@@ -24,17 +24,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System;
+using System.ComponentModel;
+using System.Net;
+
 namespace Spadecs
 {
-    using static Bootstrapper;
-
-    public unsafe struct PyBindings
+    public class PreConnectEventArgs : EventArgs
     {
-        public static readonly delegate* cdecl<string, int> MyPythonicFunction;
-
-        static PyBindings()
+        public PreConnectEventArgs()
         {
-            MyPythonicFunction = (delegate* cdecl<string, int>)PyFunctions["my_pythonic_function"];
+            AllowConnection = PyBool.Pass;
         }
+
+        public PreConnectEventArgs(in string address) : this()
+        {
+            Address = IPAddress.Parse(address);
+        }
+
+        public IPAddress Address { get; init; }
+
+        [DefaultValue(PyBool.Pass)]
+        public PyBool AllowConnection { get; set; }
+    }
+
+    public sealed class PostPlayerConnectEventArgs : PreConnectEventArgs
+    {
+        public PostPlayerConnectEventArgs(in string address, in byte id) : base(in address)
+        {
+            ID = id;
+        }
+
+        public byte ID { get; init; }
     }
 }

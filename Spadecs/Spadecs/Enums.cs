@@ -24,17 +24,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using c_ubyte = System.Byte;
+using c_int32 = System.Int32;
+
 namespace Spadecs
 {
-    using static Bootstrapper;
-
-    public unsafe struct PyBindings
+    public enum PyBool : c_ubyte
     {
-        public static readonly delegate* cdecl<string, int> MyPythonicFunction;
+        False = 0,
+        True = 1,
+        Pass = 2
+    }
 
-        static PyBindings()
-        {
-            MyPythonicFunction = (delegate* cdecl<string, int>)PyFunctions["my_pythonic_function"];
-        }
+    public enum ETeam : c_int32
+    {
+        Blue = 0,
+        Green = 1,
+        Spectator = 2
     }
 }

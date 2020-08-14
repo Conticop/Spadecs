@@ -52,11 +52,11 @@ namespace Spadecs
                               : "BUGCHECK: Integer is not matching!! Please report a bug.");
 
             // Setup some events (testing purposes)
-            void PrePlayerConnect(object sender, PreConnectEventArgs e)
+            static void PrePlayerConnect(object sender, PreConnectEventArgs e)
             {
                 Console.WriteLine("[dotnet] {0}({1})", nameof(PrePlayerConnect), e.Address);
             }
-            void PostPlayerConnect(object sender, PostPlayerConnectEventArgs e)
+            static void PostPlayerConnect(object sender, PostPlayerConnectEventArgs e)
             {
                 Console.WriteLine("[dotnet] {0}({1}, #{2})", nameof(PostPlayerConnect), e.Address, e.ID);
             }
