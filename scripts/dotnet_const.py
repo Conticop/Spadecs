@@ -68,6 +68,10 @@ def pyexport(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']
     return pybinding
 
 
+def _pack_args(*args) -> list:
+    return [v.encode("utf-8") if isinstance(v, str) else v for v in args]
+
+
 def pyimport(assembly_name: str, class_name: str, method_name: str, restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
     """
     Decorator used to import user-defined function from .NET to be used/called in Python.
@@ -79,14 +83,11 @@ def pyimport(assembly_name: str, class_name: str, method_name: str, restype: Opt
         managed_method = CFUNCTYPE(restype, *argtypes)(fptr.value)
         IMPORTED_FUNCTIONS[id(f)] = (managed_method, class_name, method_name, *argtypes)
 
-        def pack_args(*args):
-            return [v.encode("utf-8") if isinstance(v, str) else v for v in args]
-
         def netmethod(*args):
             assert len(args) == len(argtypes), "Invalid number of arguments"
-            return managed_method(*pack_args(*args))
+            return managed_method(*_pack_args(*args))
 
-        def netmethod_string(*args):
+        def netmethod_string(*args) -> str:
             # Special handling for `string` return type (automatically decode to UTF8).
             return netmethod(*args).decode("utf-8")
 

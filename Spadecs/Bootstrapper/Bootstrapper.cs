@@ -55,10 +55,13 @@ namespace Spadecs
             static void PrePlayerConnect(object sender, PreConnectEventArgs e)
             {
                 Console.WriteLine("[dotnet] {0}({1})", nameof(PrePlayerConnect), e.Address);
+                //e.AllowConnection = PyBool.False;
+                Console.WriteLine("Pre return: {0}", e.AllowConnection);
             }
             static void PostPlayerConnect(object sender, PostPlayerConnectEventArgs e)
             {
                 Console.WriteLine("[dotnet] {0}({1}, #{2})", nameof(PostPlayerConnect), e.Address, e.ID);
+                Console.WriteLine("Post return: {0}", e.AllowConnection);
             }
             EventManager.PrePlayerConnect += PrePlayerConnect;
             EventManager.PostPlayerConnect += PostPlayerConnect;

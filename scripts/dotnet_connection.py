@@ -39,16 +39,22 @@ class DotNetConnection(CONNECTION):
         # print("[dotnet] Connection initialized")
 
     def on_connect(self, *args, **kwargs):
-        ipAddress = self.address[0].encode("utf-8")
+        ipAddress = self.address[0]
         # print("pre_player_connect", type(ipAddress), ipAddress)
         result = dotnet_exports.dotnet_event_pre_player_connect(ipAddress)
         # self.OnConnectCallback[result]()
         if result == 0:
+            self.kick(None, True)
             return False
         if result == 1:
-            return True
-        result = CONNECTION.on_connect(self, *args, **kwargs)
+            return CONNECTION.on_connect(self, *args, **kwargs)
+        realResult = CONNECTION.on_connect(self, *args, **kwargs)
         pid = self.player_id
         # print("post_player_connect", type(pid), pid)
-        post_result = dotnet_exports.dotnet_event_post_player_connect(ipAddress, pid)
-        return (False, True, result)[post_result]
+        postResult = dotnet_exports.dotnet_event_post_player_connect(ipAddress, pid)
+        if postResult == 0:
+            self.kick(None, True)
+            return False
+        if postResult == 1:
+            return True
+        return realResult
