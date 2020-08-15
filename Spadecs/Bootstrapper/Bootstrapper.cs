@@ -27,15 +27,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Spadecs
 {
     using static PyBindings;
+    using static PyRegistry;
 
     public static unsafe class Bootstrapper
     {
-        internal static Dictionary<string, ulong> PyFunctions;
-
         static Bootstrapper()
         {
         }
@@ -62,6 +62,12 @@ namespace Spadecs
             {
                 Console.WriteLine("[dotnet] {0}({1}, #{2})", nameof(PostPlayerConnect), e.Address, e.ID);
                 Console.WriteLine("Post return: {0}", e.AllowConnection);
+                byte pid = e.ID;
+                if (e.AllowConnection != PyBool.False)
+                {
+                    // NOTE: The player doesn't seem to be kickable while in Limbo-state.
+                    Task.Run(() => TestClass.KickThePlayerAsync(pid));
+                }
             }
             EventManager.PrePlayerConnect += PrePlayerConnect;
             EventManager.PostPlayerConnect += PostPlayerConnect;
@@ -70,6 +76,16 @@ namespace Spadecs
         public static void OnUnload()
         {
             Console.WriteLine(".NET CLR is unloading!");
+        }
+    }
+
+    internal static class TestClass
+    {
+        internal static async Task KickThePlayerAsync(byte pid)
+        {
+            Console.WriteLine("[dotnet](test) Player #{0} will be kicked in 30s...", pid);
+            await Task.Delay(TimeSpan.FromSeconds(30));
+            unsafe { CPlayer_KickByID(pid); }
         }
     }
 }

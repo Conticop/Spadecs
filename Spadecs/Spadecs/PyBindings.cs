@@ -24,17 +24,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+using c_ubyte = System.Byte;
+using c_int32 = System.Int32;
+using c_char_p = System.String;
+
+[assembly: InternalsVisibleTo("Spadecs.Boot")]
+
 namespace Spadecs
 {
-    using static Bootstrapper;
+    using static PyRegistry;
 
     public unsafe struct PyBindings
     {
-        public static readonly delegate* cdecl<string, int> MyPythonicFunction;
+        public static readonly delegate* cdecl<c_char_p, c_int32> MyPythonicFunction;
+        public static readonly delegate* cdecl<c_ubyte, void> CPlayer_KickByID;
 
         static PyBindings()
         {
-            MyPythonicFunction = (delegate* cdecl<string, int>)PyFunctions["my_pythonic_function"];
+            MyPythonicFunction = (delegate* cdecl<c_char_p, c_int32>)PyFunctions["my_pythonic_function"];
+            CPlayer_KickByID = (delegate* cdecl<c_ubyte, void>)PyFunctions["cplayer_kick_by_id"];
+        }
+    }
+
+    internal static class PyRegistry
+    {
+        internal static Dictionary<string, ulong> PyFunctions;
+
+        static PyRegistry()
+        {
         }
     }
 }

@@ -315,6 +315,14 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
             error_code = _CLRLIB.coreclr_shutdown(_CLR_handle.value, _CLR_domain.value)
             if error_code != 0:
                 print(".NET CLR shutdown (code={})".format(error_code))
+            dotnet_const.CLR_LIB = None
+            dotnet_const.CLR_HANDLE = None
+            dotnet_const.CLR_DOMAIN = None
+            dotnet_const.FUNCTION_IMPORTER = None
+            dotnet_const.FUNCTIONS.clear()
+            dotnet_const.BINDINGS.clear()
+            dotnet_const.BINDINGS_JSON.clear()
+            dotnet_const.IMPORTED_FUNCTIONS.clear()
             del _CLRLIB, _CLR_handle, _CLR_domain, on_unload, error_code
 
     atexit.register(exit_handler)
@@ -335,6 +343,10 @@ def apply_script(protocol, connection, config):
     dotnet_const.PROTOCOL = protocol
     dotnet_const.CONNECTION = connection
     dotnet_const.CONFIG = config
+    dotnet_const.FUNCTIONS = {}
+    dotnet_const.BINDINGS = {}
+    dotnet_const.BINDINGS_JSON = {}
+    dotnet_const.IMPORTED_FUNCTIONS = {}
     import dotnet_protocol
     import dotnet_connection
     # noinspection PyUnresolvedReferences
@@ -368,4 +380,5 @@ if __name__ == "__main__":
     class DummyType:
         pass
 
+    sys.path.insert(1, abspath(join(dirname(__file__), "..", "..")))  # Fix server imports.
     apply_script(DummyType, DummyType, DummyType)

@@ -34,7 +34,6 @@ if dotnet_const.CLR_LIB:
 class DotNetConnection(CONNECTION):
     def __init__(self, *args, **kwargs):
         CONNECTION.__init__(self, *args, **kwargs)
-        dotnet_const.CONNECTION_OBJ = self
         # self.OnConnectCallback = (FalseLogic, TrueLogic, PassLogic)
         # print("[dotnet] Connection initialized")
 

@@ -37,10 +37,10 @@ PYTHON_3 = sys.version_info > (3, 0)
 ENVIRON = os.environ
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 Runtime = namedtuple("Runtime", "name version path")
-FUNCTIONS = {}
-BINDINGS = {}
-BINDINGS_JSON = {}
-IMPORTED_FUNCTIONS = {}
+FUNCTIONS = None  # type: dict
+BINDINGS = None  # type: dict
+BINDINGS_JSON = None  # type: dict
+IMPORTED_FUNCTIONS = None  # type: dict
 CLR_LIB = None
 CLR_HANDLE = None
 CLR_DOMAIN = None
@@ -48,7 +48,6 @@ FUNCTION_IMPORTER = None  # type: Callable
 PROTOCOL = None
 PROTOCOL_OBJ = None
 CONNECTION = None
-CONNECTION_OBJ = None
 CONFIG = None
 
 

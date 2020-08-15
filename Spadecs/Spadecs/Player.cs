@@ -29,6 +29,8 @@ using System.Numerics;
 
 namespace Spadecs
 {
+    using static PyBindings;
+
     public interface IPlayer
     {
         public IPAddress Address { get; init; }
@@ -44,9 +46,11 @@ namespace Spadecs
         public ETeam Team { get; set; }
 
         public byte ID { get; init; }
+
+        public void Kick();
     }
 
-    public class Player : IPlayer
+    public unsafe class Player : IPlayer
     {
         public IPAddress Address { get; init; }
 
@@ -61,5 +65,7 @@ namespace Spadecs
         public ETeam Team { get; set; }
 
         public byte ID { get; init; }
+
+        public void Kick() => CPlayer_KickByID(ID);
     }
 }

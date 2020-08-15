@@ -29,10 +29,23 @@ This file defines all Python functions (API) which are exported to .NET for cons
 """
 
 from ctypes import *
+import dotnet_const
 from dotnet_const import pyexport
+import pyspades
+from pyspades.constants import ERROR_KICKED
 
 
 @pyexport(c_int32, c_char_p)
 def my_pythonic_function(value: str) -> int:
     print("(.NET to Python)", value)
     return 123
+
+
+@pyexport(None, c_ubyte)
+def cplayer_kick_by_id(pid: int) -> None:
+    # print("cplayer_kick_by_id", pid)
+    if pid in dotnet_const.PROTOCOL_OBJ.players:
+        ply = dotnet_const.PROTOCOL_OBJ.players[pid]
+        # print("Player:", ply)
+        if ply:
+            ply.disconnect(ERROR_KICKED)
