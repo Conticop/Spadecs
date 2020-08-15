@@ -1,5 +1,5 @@
 # Spadecs
-[![Build Status](https://github.com/Conticop/Spadecs/workflows/CI/badge.svg?branch=master)](https://github.com/Conticop/Spadecs/commits/master)  
+[![Build Status](https://github.com/Conticop/Spadecs/workflows/.NET/badge.svg?branch=master)](https://github.com/Conticop/Spadecs/commits/master)  
 An attempt to bring .NET scripting into classic "Ace of Spades" (0.x) servers ❤️  
 The goal is to be able to use C# (or any .NET language) for scripting server-side.  
 
