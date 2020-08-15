@@ -29,7 +29,7 @@ In other words, if you want the ability to be able to fully debug your server-co
   <summary>I can do it myself!</summary>
 
   ### Building
-  1. Install .NET Core SDK (5.0 or higher), [using latest available is highly recommended](https://dotnet.microsoft.com/download/dotnet/5.0).
+  1. Install .NET SDK (5.0 or higher), [using latest available is highly recommended](https://dotnet.microsoft.com/download/dotnet/5.0).
   2. [Download](https://github.com/Conticop/Spadecs/archive/master.zip) **or** Clone the repository (using `git clone https://github.com/Conticop/Spadecs`, or use your favorite GUI).
      * If you choose to download via zip: After downloading, extract the zip archive to preferable location, and open a command prompt (Terminal) *inside* an extracted folder.
      * If you choose to clone: After cloning, open the repo folder (`cd Spadecs`).
@@ -52,7 +52,7 @@ In other words, if you want the ability to be able to fully debug your server-co
 </details>
 
 ## Running
-1. If you have build Spadecs from source, skip this step. Otherwise, [download and install .NET Core Runtime](https://dotnet.microsoft.com/download/dotnet-core/5.0/runtime).
+1. If you have build Spadecs from source, skip this step. Otherwise, [download and install .NET Runtime](https://dotnet.microsoft.com/download/dotnet-core/5.0/runtime).
 2. Copy all contents of the `scripts` folder (`*.py` files + `dotnet` folder) into your server scripts folder.
 3. Modify your server configuration file to include and run `dotnet` script, it is recommended to place it first before any other scripts.
 4. Launch your server.
@@ -60,12 +60,12 @@ In other words, if you want the ability to be able to fully debug your server-co
 6. Profit.
 
 ## Troubleshooting & Notes
-- You only need .NET Core Runtime unless you intent to build Spadecs from source.  
-    * [.NET Core SDK is only required if you are going to build Spadecs from source](https://dotnet.microsoft.com/download).  
+- You only need .NET Runtime unless you intent to build Spadecs from source.  
+    * [.NET SDK is only required if you are going to build Spadecs from source](https://dotnet.microsoft.com/download).  
 
 - Are you getting `%1 is not valid Win32 program` error upon server launch?  
     * This is a known problem when you are running 32-bit server instance on 64-bit Windows.  
-    * Make sure you install 32-bit (x86) .NET Core SDK/Runtime. And also assign `DOTNETHOME_X86` (system) environment variable to point at installation folder (by default, `C:\Program Files (x86)\dotnet`):  
+    * Make sure you install 32-bit (x86) .NET SDK/Runtime. And also assign `DOTNETHOME_X86` (system) environment variable to point at installation folder (by default, `C:\Program Files (x86)\dotnet`):  
     ![image](https://user-images.githubusercontent.com/58798963/74741057-6dc02800-525c-11ea-9af3-b85bd5daa4ec.png)
 
 ## License
