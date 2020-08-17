@@ -47,3 +47,8 @@ def dotnet_event_pre_player_connect(ip_address: str) -> int:
 @pyimport(_ASSEMBLY, _CLASS, "OnPostPlayerConnect", c_ubyte, c_char_p, c_ubyte)
 def dotnet_event_post_player_connect(ip_address: str, pid: int) -> int:
     pass  # The body of this function will be automagically replaced at runtime.
+
+
+@pyimport(_ASSEMBLY, _CLASS, "OnGetObjects", None, c_char_p)
+def dotnet_event_update_objects(objects_json: str) -> None:
+    pass  # The body of this function will be automagically replaced at runtime.

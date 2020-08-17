@@ -31,6 +31,7 @@ This file defines all Python functions (API) which are exported to .NET for cons
 from ctypes import *
 import dotnet_const
 from dotnet_const import pyexport
+import json
 import pyspades
 from pyspades.constants import ERROR_KICKED
 
@@ -49,3 +50,11 @@ def cplayer_kick_by_id(pid: int) -> None:
         # print("Player:", ply)
         if ply:
             ply.disconnect(ERROR_KICKED)
+
+
+@pyexport(None)
+def dotnet_get_objects() -> None:
+    # noinspection PyUnresolvedReferences
+    from dotnet_exports import dotnet_event_update_objects
+    # This is a stupid fix (can't return a string directly), but I don't have time to do a cleaner implementation.
+    dotnet_event_update_objects(json.dumps(dotnet_const.OBJECTS, separators=(',', ':')))

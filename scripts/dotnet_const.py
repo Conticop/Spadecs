@@ -27,6 +27,7 @@
 import enum
 import os
 import sys
+import weakref
 from collections import namedtuple
 from ctypes import *
 from typing import Callable, Optional, Type
@@ -37,10 +38,17 @@ PYTHON_3 = sys.version_info > (3, 0)
 ENVIRON = os.environ
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 Runtime = namedtuple("Runtime", "name version path")
+
 FUNCTIONS = None  # type: dict
 BINDINGS = None  # type: dict
 BINDINGS_JSON = None  # type: dict
 IMPORTED_FUNCTIONS = None  # type: dict
+
+# [string] = (id(value), str(type(value))).
+OBJECTS = None  # type: dict
+# [id(value)] = value.
+MEMORY = None  # type: weakref.WeakValueDictionary
+
 CLR_LIB = None
 CLR_HANDLE = None
 CLR_DOMAIN = None
@@ -49,6 +57,66 @@ PROTOCOL = None
 PROTOCOL_OBJ = None
 CONNECTION = None
 CONFIG = None
+
+
+def track_object(value, name: Optional[str] = None) -> bool:
+    """
+    Makes the given object/value "trackable" across language boundaries (Python -> .NET and vice versa).
+    Optionally, specify a unique name to be assigned (to help identify an object easier).
+    """
+
+    assert value is not None, "Can not track a None value"
+    obj_id = id(value)
+    if obj_id in MEMORY:
+        return False
+    if name:
+        if name in OBJECTS:
+            return False
+        OBJECTS[name] = (str(obj_id), str(type(value)))
+    MEMORY[obj_id] = value
+    return True
+
+
+def _release_object(obj_id: int) -> bool:
+    if obj_id in MEMORY:
+        del MEMORY[obj_id]
+        return True
+    return False
+
+
+def untrack_object(value, check_named: Optional[bool] = False) -> bool:
+    """
+    Removes "tracking" from the given value. Consider using untrack_named_object if name were assigned.
+    """
+
+    assert value is not None, "Can not untrack a None value"
+    obj_id = id(value)
+    if check_named:
+        # Remove all 'obj_id' value(s) from OBJECTS. This is a hacked up implementation, but it will work for now.
+        ks, vs, idx, size = list(OBJECTS.keys()), list(OBJECTS.values()), 0, len(OBJECTS)
+        assert size == len(ks) and len(ks) == len(vs), "__should_never_see_this__"
+        while idx < size:
+            k, v = ks[idx], vs[idx]
+            if v[0] == str(obj_id):
+                del ks[idx], vs[idx], OBJECTS[k], k, v
+                size -= 1
+                continue  # Keep the loop going (in case there are multiple).
+            idx += 1
+            del k, v
+        del ks, vs, idx, size
+    return _release_object(obj_id)
+
+
+def untrack_named_object(name: str) -> bool:
+    """
+    Removes "tracking" from the given named object.
+    """
+
+    if name in OBJECTS:
+        obj_id = int(OBJECTS[name][0])
+        del OBJECTS[name]
+        return _release_object(obj_id)
+    return False
 
 
 def pyexport(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']):
@@ -69,9 +137,15 @@ def pyexport(restype: Optional[Type['_CData']] = None, *argtypes: Type['_CData']
             assert len(args) == len(argtypes), "Invalid number of arguments"
             return f(*_unpack_args(*args))
 
-        def pymethod_string(*args) -> str:
-            # Special handling for `string` return type (automatically decode to UTF8).
-            return pymethod(*args).decode("utf-8")
+        def pymethod_string(*args):
+            # Special handling for `string` return type (automatically encode to UTF8).
+            assert False, "THIS SHIT DOESN'T WORK!!        WHY?        HAS I EVER?"
+            # retval = pymethod(*args)
+            # retval = retval.encode("utf-8")
+            # print(retval, type(retval))
+            # chptr = c_char_p(retval)
+            # print(chptr.value)
+            # return chptr.value
 
         pymethod_string.__name__ = pymethod.__name__ = f.__name__
         func = pymethod_string if restype is c_char_p else pymethod
@@ -94,7 +168,7 @@ def pyimport(assembly_name: str, class_name: str, method_name: str, restype: Opt
         assert len(argtypes) == f.__code__.co_argcount
         fptr = FUNCTION_IMPORTER(class_name, method_name, assembly_name)
         managed_method = CFUNCTYPE(restype, *argtypes)(fptr.value)
-        IMPORTED_FUNCTIONS[id(f)] = (managed_method, class_name, method_name, *argtypes)
+        IMPORTED_FUNCTIONS[id(f)] = (managed_method, class_name, method_name, restype, *argtypes)
 
         def netmethod(*args):
             assert len(args) == len(argtypes), "Invalid number of arguments"
