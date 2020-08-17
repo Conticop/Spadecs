@@ -41,11 +41,13 @@ namespace Spadecs
     {
         public static readonly delegate* cdecl<c_char_p, c_int32> MyPythonicFunction;
         public static readonly delegate* cdecl<c_ubyte, void> CPlayer_KickByID;
+        public static readonly delegate* cdecl<void> DotNet_GetObjects;
 
         static PyBindings()
         {
             MyPythonicFunction = (delegate* cdecl<c_char_p, c_int32>)PyFunctions["my_pythonic_function"];
             CPlayer_KickByID = (delegate* cdecl<c_ubyte, void>)PyFunctions["cplayer_kick_by_id"];
+            DotNet_GetObjects = (delegate* cdecl<void>)PyFunctions["dotnet_get_objects"];
         }
     }
 

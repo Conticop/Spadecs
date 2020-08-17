@@ -25,6 +25,8 @@
 // SOFTWARE.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Spadecs
 {
@@ -58,6 +60,16 @@ namespace Spadecs
             var e = new PostPlayerConnectEventArgs(in address, in id);
             handler(null, e);
             return e.AllowConnection;
+        }
+
+        private static void OnGetObjects(string objectsJson)
+        {
+            objectsJson += String.Empty; // Create a 'safe' copy.
+            Console.WriteLine(objectsJson);
+            var deserialized = JsonSerializer.Deserialize<Dictionary<string, string[]>>(objectsJson);
+            var protocol = deserialized!["PROTOCOL_OBJ"];
+            var (obj_id, type) = (protocol[0], protocol[1]);
+            Console.WriteLine("{0} : {1}", obj_id, type);
         }
     }
 }

@@ -33,6 +33,7 @@ import re
 import shutil
 import signal
 import sys
+import weakref
 from ctypes import *
 from os.path import abspath, dirname, isdir, join
 from subprocess import check_output
@@ -40,59 +41,6 @@ from typing import List, Optional, Tuple
 
 sys.path.insert(1, abspath(dirname(__file__)))  # Fix dotnet_* imports.
 import dotnet_const
-
-"""
-Monkey-patch/Poly-fill for Python 2, implementing "shutil.which" function.
-"""
-if not hasattr(shutil, "which"):
-    # Check that a given file can be accessed with the correct mode.
-    # Additionally check that `file` is not a directory, as on Windows
-    # directories pass the os.access check.
-    def _access_check(fn, mode):
-        return os.path.exists(fn) and os.access(fn, mode) and not isdir(fn)
-
-
-    def shutil_which(cmd, mode=os.F_OK | os.X_OK, path=None):
-        # Short circuit. If we're given a full path which matches the mode
-        # and it exists, we're done here.
-        if _access_check(cmd, mode):
-            return cmd
-
-        path = (path or dotnet_const.ENVIRON.get("PATH", os.defpath)).split(os.pathsep)
-
-        if dotnet_const.PLATFORM == "win32":
-            # The current directory takes precedence on Windows.
-            curdir = os.curdir
-            if curdir not in path:
-                path.insert(0, curdir)
-
-            # PATHEXT is necessary to check on Windows.
-            pathext = dotnet_const.ENVIRON.get("PATHEXT", "").split(os.pathsep)
-            # See if the given file matches any of the expected path extensions.
-            # This will allow us to short circuit when given "python.exe".
-            # matches = [cmd for ext in pathext if cmd.lower().endswith(ext.lower())]
-            matches = any(cmd.lower().endswith(ext.lower()) for ext in pathext)
-            # If it does match, only test that one, otherwise we have to try
-            # others.
-            files = [cmd] if matches else [cmd + ext.lower() for ext in pathext]
-        else:
-            # On other platforms you don't have things like PATHEXT to tell you
-            # what file suffixes are executable, so just pass on cmd as-is.
-            files = [cmd]
-
-        seen = set()
-        for dt in path:
-            normdir = os.path.normcase(dt)
-            if normdir not in seen:
-                seen.add(normdir)
-                for f in files:
-                    name = join(dt, f)
-                    if _access_check(name, mode):
-                        return name
-        return None
-
-
-    shutil.which = shutil_which
 
 
 def get_platform_name() -> str:
@@ -323,14 +271,18 @@ def LoadCoreCLR(assembly_path: str, assembly_name: str, class_name: str,
             dotnet_const.BINDINGS.clear()
             dotnet_const.BINDINGS_JSON.clear()
             dotnet_const.IMPORTED_FUNCTIONS.clear()
-            del _CLRLIB, _CLR_handle, _CLR_domain, on_unload, error_code
+            dotnet_const.OBJECTS.clear()
+            del _CLRLIB, _CLR_handle, _CLR_domain, on_unload, error_code, \
+                dotnet_const.FUNCTION_IMPORTER, dotnet_const.FUNCTIONS, \
+                    dotnet_const.BINDINGS, dotnet_const.BINDINGS_JSON, \
+                        dotnet_const.IMPORTED_FUNCTIONS, dotnet_const.OBJECTS
 
     atexit.register(exit_handler)
     signal.signal(signal.SIGINT, exit_handler)
     signal.signal(signal.SIGTERM, exit_handler)
 
     jsonData = json.dumps(dotnet_const.BINDINGS_JSON, separators=(',', ':'))
-    CFUNCTYPE(None, c_char_p)(on_load_func_ptr.value)(c_char_p(jsonData.encode("utf-8")))
+    CFUNCTYPE(None, c_char_p)(on_load_func_ptr.value)(jsonData.encode("utf-8"))
     del jsonData
 
     # noinspection PyUnresolvedReferences
@@ -347,6 +299,8 @@ def apply_script(protocol, connection, config):
     dotnet_const.BINDINGS = {}
     dotnet_const.BINDINGS_JSON = {}
     dotnet_const.IMPORTED_FUNCTIONS = {}
+    dotnet_const.OBJECTS = {}
+    dotnet_const.MEMORY = weakref.WeakValueDictionary()
     import dotnet_protocol
     import dotnet_connection
     # noinspection PyUnresolvedReferences
@@ -380,5 +334,15 @@ if __name__ == "__main__":
     class DummyType:
         pass
 
+    class DummyConnection:
+        address = ["127.0.0.1"]
+
+        def on_connect(self, *args, **kwargs):
+            self.player_id = 0
+
     sys.path.insert(1, abspath(join(dirname(__file__), "..", "..")))  # Fix server imports.
-    apply_script(DummyType, DummyType, DummyType)
+    protocol, connection = apply_script(DummyType, DummyConnection, DummyType)
+    protocol()
+    connection()
+    connection.on_connect(connection)
+    print("The End.")

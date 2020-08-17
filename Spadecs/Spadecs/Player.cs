@@ -68,4 +68,69 @@ namespace Spadecs
 
         public void Kick() => CPlayer_KickByID(ID);
     }
+
+    public abstract class BaseWeapon
+    {
+        protected internal BaseWeapon(EWeapon id, string name, double delay, int ammo, int stock, double reloadTime, bool slowReload, IWeaponDamage damage)
+        {
+            ID = id;
+            Name = name;
+            Delay = delay;
+            Ammo = ammo;
+            Stock = stock;
+            ReloadTime = reloadTime;
+            SlowReload = slowReload;
+            Damage = damage;
+        }
+
+        public EWeapon ID { get; }
+
+        public string Name { get; }
+
+        public double Delay { get; }
+
+        public int Ammo { get; }
+
+        public int Stock { get; }
+
+        public double ReloadTime { get; }
+
+        public bool SlowReload { get; }
+
+        public IWeaponDamage Damage { get; }
+
+        public bool Shoot { get; set; }
+
+        public bool Reloading { get; set; }
+
+        public int CurrentAmmo { get; set; }
+
+        public int CurrentStock { get; set; }
+
+        public virtual int GetDamage(EBodyPart bodyPart, Vector3 position1, Vector3 position2)
+        {
+            return Damage[(int)bodyPart];
+        }
+    }
+
+    public sealed class Rifle : BaseWeapon
+    {
+        public Rifle() : base(EWeapon.Rifle, "Rifle", 0.5, 10, 50, 2.5, false, new WeaponDamage(49, 100, 33, 33))
+        {
+        }
+    }
+
+    public sealed class SMG : BaseWeapon
+    {
+        public SMG() : base(EWeapon.SMG, "SMG", 0.11, 30, 120, 2.5, false, new WeaponDamage(29, 75, 18, 18))
+        {
+        }
+    }
+
+    public sealed class Shotgun : BaseWeapon
+    {
+        public Shotgun() : base(EWeapon.Shotgun, "Shotgun", 1.0, 6, 48, 0.5, true, new WeaponDamage(27, 37, 16, 16))
+        {
+        }
+    }
 }

@@ -46,7 +46,7 @@ namespace Spadecs
             Console.WriteLine(".NET CLR is running!");
 
             // Call into Python function to print a given string
-            int result = MyPythonicFunction("This string has warp'ed from .NET to Python land :)");
+            var result = MyPythonicFunction("This string has warp'ed from .NET to Python land :)");
             Console.WriteLine(result == 123
                               ? "All good! We are ready to rule the world."
                               : "BUGCHECK: Integer is not matching!! Please report a bug.");
@@ -57,6 +57,10 @@ namespace Spadecs
                 Console.WriteLine("[dotnet] {0}({1})", nameof(PrePlayerConnect), e.Address);
                 //e.AllowConnection = PyBool.False;
                 Console.WriteLine("Pre return: {0}", e.AllowConnection);
+                // Test trackable object
+                DotNet_GetObjects();
+                //Console.WriteLine("Objects: {0}", objectsJson);
+                //var deserialized = JsonSerializer.Deserialize<Dictionary<string, string[]>>(objectsJson);
             }
             static void PostPlayerConnect(object sender, PostPlayerConnectEventArgs e)
             {
